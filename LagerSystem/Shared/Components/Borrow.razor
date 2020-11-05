@@ -1,0 +1,21 @@
+﻿@using Microsoft.AspNetCore.ProtectedBrowserStorage
+@inject ProtectedLocalStorage ProtectedLocalStore
+
+@using DataLayer.Entities
+
+@BorrowItemCount
+
+@code {
+    public int BorrowItemCount { get; set; }
+
+    public async Task Invoke()
+    {
+        List<Item> itemlist = new List<Item>();
+        string localStorege = await ProtectedLocalStore.GetAsync<string>("ItemList");
+        if (!string.IsNullOrEmpty(localStorege))
+        {
+            itemlist = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Item>>(localStorege);
+        }
+        BorrowItemCount = itemlist.Count();
+    }
+}

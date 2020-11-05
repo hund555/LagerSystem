@@ -13,6 +13,7 @@ using LagerSystem.Data;
 using DataLayer;
 using Microsoft.EntityFrameworkCore;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
+using ServiceLayer;
 
 namespace LagerSystem
 {
@@ -30,6 +31,10 @@ namespace LagerSystem
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<LagerContext>(options => options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddScoped<ILagerService, LagerService>();
+
+            services.AddProtectedBrowserStorage();
+
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();

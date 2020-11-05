@@ -1,0 +1,79 @@
+﻿@page "/LagerListe"
+
+@inject ServiceLayer.ILagerService _lagerService
+
+@using Microsoft.AspNetCore.ProtectedBrowserStorage
+@inject ProtectedLocalStorage ProtectedLocalStore
+
+@using DataLayer.Entities
+<h3>Lager</h3>
+<hr />
+
+@foreach (var item in items)
+{
+    <div class="row">
+        <div class="col-md-3">
+            @item.ItemName
+        </div>
+        <div class="col-md-6">
+            @item.Discription
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary" @onclick="(() => BorrowItem(item))">Lån</button>
+            <button class="btn btn-primary" @onclick="(() => DeleteItem(item.ItemId))">Slet</button>
+            <a class="btn btn-primary" href="/EditItem/@item.ItemId/">Redigér</a>
+        </div>
+    </div>
+    <hr />
+}
+
+
+
+@code {
+    private IList<Item> items { get; set; }
+
+    private List<Item> ItemList { get; set; }
+
+    //[Parameter]
+    //public EventCallback<string> EventCallbackCount { get; set; }
+
+    protected override void OnInitialized()
+    {
+        items = _lagerService.GetAllItemsInStorege().ToList();
+        ItemList = new List<Item>();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        string localStorege = await ProtectedLocalStore.GetAsync<string>("ItemList");
+        if (!string.IsNullOrEmpty(localStorege))
+        {
+            ItemList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Item>>(localStorege);
+            foreach (Item item in ItemList)
+            {
+                items.Remove(items.Where(i => i.ItemId == item.ItemId).FirstOrDefault());
+            }
+            StateHasChanged();
+        }
+    }
+
+    private async Task DeleteItem(int itemId)
+    {
+        await _lagerService.DeleteItem(itemId);
+    }
+
+    private async Task BorrowItem(Item item)
+    {
+        items.Remove(item);
+        if (!ItemList.Contains(item))
+        {
+            ItemList.Add(item);
+        }
+
+        string json = Newtonsoft.Json.JsonConvert.SerializeObject(ItemList);
+
+        await ProtectedLocalStore.SetAsync("ItemList", json);
+
+        //await EventCallbackCount.InvokeAsync(ItemList.Count().ToString());
+    }
+}

@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace ServiceLayer
 {
-    public class LagerService
+    public class LagerService : ILagerService
     {
         private readonly LagerContext _context;
         public LagerService(LagerContext context)
@@ -17,9 +17,18 @@ namespace ServiceLayer
             _context = context;
         }
 
-        public IQueryable<Item> GetAllItems()
+        public IQueryable<Item> GetAllItemsInStorege()
         {
             return _context.Items
+                .Where(u => u.UserId == null)
+                .AsNoTracking();
+        }
+
+        public IQueryable<Item> GetItemsNotInStorege()
+        {
+            return _context.Items
+                .Where(u => u.UserId != null)
+                .Include(u => u.User)
                 .AsNoTracking();
         }
 
@@ -29,10 +38,10 @@ namespace ServiceLayer
                 .Find(itemId);
         }
 
-        public IQueryable<Item> GetUsersItems(User user)
+        public IQueryable<Item> GetUsersItems(int userId)
         {
             return _context.Items
-                .Where(i => i.User == user)
+                .Where(i => i.UserId == userId)
                 .AsNoTracking();
         }
 
@@ -52,6 +61,41 @@ namespace ServiceLayer
             await _context.SaveChangesAsync();
 
             return updateItem;
+        }
+
+        public async Task BorrowItems(List<int> itemIdList, int userId)
+        {
+            List<Item> items = new List<Item>();
+            foreach (int itemId in itemIdList)
+            {
+                items.Add(await _context.Items
+                    .FindAsync(itemId));
+            }
+
+            if (items.Any())
+            {
+                foreach (Item item in items)
+                {
+                    item.UserId = userId;
+                }
+            }
+            
+            _context.Items.UpdateRange(items);
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task ReturnItem(int itemId)
+        {
+            Item item = await _context.Items
+                .FindAsync(itemId);
+
+            if (item != null)
+            {
+                item.UserId = null;
+            }
+
+            _context.Items.Update(item);
+            await _context.SaveChangesAsync();
         }
 
         public async Task DeleteItem(int itemId)

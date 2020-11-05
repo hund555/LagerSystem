@@ -1,0 +1,87 @@
+﻿@page "/confirmborrow"
+
+@inject ServiceLayer.ILagerService _lagerService
+
+@using Microsoft.AspNetCore.ProtectedBrowserStorage
+@inject ProtectedLocalStorage ProtectedLocalStore
+
+@using DataLayer.Entities
+<h3>BorrowItemsListPage</h3>
+
+@foreach (var item in Items)
+{
+    <div class="row">
+        <div class="col-md-3">
+            @item.ItemName
+        </div>
+        <div class="col-md-6">
+            @item.Discription
+        </div>
+    </div>
+    <hr />
+}
+<div class="row">
+    <div class="col-md-3">
+        <select class="form-control" @bind="UserId">
+            <option value="null">Vælg</option>
+            @foreach (var user in Users)
+            {
+                <option value="@user.UserId">@user.Name</option>
+            }
+        </select>
+    </div>
+    <div class="col-md-1">
+        <button class="btn btn-primary" @onclick="BorrowItems">Lån</button>
+    </div>
+    <div class="col-md-2">
+        <button class="btn btn-warning" @onclick="ResetLocalStorage" >Fjern alle</button>
+    </div>
+</div>
+
+@code {
+    public List<Item> Items { get; set; }
+
+    public List<User> Users { get; set; }
+
+    public int? UserId { get; set; }
+
+    public List<int> ItemIdList { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Users = _lagerService.GetAllUsers().ToList();
+        Items = new List<Item>();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        string localStorege = await ProtectedLocalStore.GetAsync<string>("ItemList");
+        if (!string.IsNullOrEmpty(localStorege))
+        {
+            Items = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Item>>(localStorege);
+            StateHasChanged();
+        }
+    }
+
+    private async Task ResetLocalStorage()
+    {
+        await ProtectedLocalStore.DeleteAsync("ItemList");
+        StateHasChanged();
+    }
+
+    private async Task BorrowItems()
+    {
+        if (UserId != null)
+        {
+            ItemIdList = new List<int>();
+            foreach (Item item in Items)
+            {
+                ItemIdList.Add(item.ItemId);
+            }
+            await _lagerService.BorrowItems(ItemIdList, (int)UserId);
+            await ProtectedLocalStore.DeleteAsync("ItemList");
+            Items.Clear();
+            StateHasChanged();
+        }
+    }
+}

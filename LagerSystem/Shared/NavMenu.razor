@@ -1,10 +1,15 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
+﻿@using Microsoft.AspNetCore.ProtectedBrowserStorage
+@inject ProtectedLocalStorage ProtectedLocalStore
+
+@using DataLayer.Entities
+
+<div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">LagerSystem</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
     </button>
 </div>
-
+@*<LagerSystem.Pages.LagerListe EventCallbackCount="CountItems"></LagerSystem.Pages.LagerListe>*@
 <div class="@NavMenuCssClass" @onclick="ToggleNavMenu">
     <ul class="nav flex-column">
         <li class="nav-item px-3">
@@ -22,6 +27,21 @@
                 <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
             </NavLink>
         </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="LagerListe">
+                <span class="oi oi-box" aria-hidden="true"></span> På lager
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="confirmborrow">
+                <span class="oi oi-inbox" aria-hidden="true"></span> Bekræft lån @BorrowItemsCount
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="BorrowedItems">
+                <span class="oi oi-briefcase" aria-hidden="true"></span> Udlåndt
+            </NavLink>
+        </li>
     </ul>
 </div>
 
@@ -30,8 +50,26 @@
 
     private string NavMenuCssClass => collapseNavMenu ? "collapse" : null;
 
+    public int BorrowItemsCount { get; set; }
+
     private void ToggleNavMenu()
     {
         collapseNavMenu = !collapseNavMenu;
     }
+
+    protected async Task OnAfterRenderAsync()
+    {
+        string localStorege = await ProtectedLocalStore.GetAsync<string>("ItemList");
+        if (!string.IsNullOrEmpty(localStorege))
+        {
+            List<Item> itemList = new List<Item>();
+            itemList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Item>>(localStorege);
+            BorrowItemsCount = itemList.Count();
+        }
+    }
+
+    //void CountItems(string count)
+    //{
+    //    BorrowItemsCount = Convert.ToInt32(count);
+    //}
 }
