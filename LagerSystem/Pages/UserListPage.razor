@@ -1,0 +1,34 @@
+﻿@page "/useradministration"
+
+@inject ServiceLayer.ILagerService _lagerService
+<h3>Brugere</h3>
+<hr />
+@foreach (var user in Users)
+{
+    <div class="row">
+        <div class="col-md-4">
+            @user.Name
+        </div>
+        <div class="col-md-3">
+            <button class="btn btn-primary" @onclick="(() => DeleteUser(user.UserId))">Slet</button>
+            <a class="btn btn-primary" href="/EditUser/@user.UserId/">Redigér</a>
+        </div>
+    </div>
+    <hr />
+}
+
+@code {
+    public IList<DataLayer.Entities.User> Users { get; set; }
+
+    protected override void OnInitialized()
+    {
+        Users = _lagerService.GetAllUsers().ToList();
+    }
+
+    private async Task DeleteUser(int userId)
+    {
+        await _lagerService.DeleteUser(userId);
+
+        Users.Remove(Users.FirstOrDefault(u => u.UserId == userId));
+    }
+}

@@ -19,6 +19,7 @@ namespace ServiceLayer
         IQueryable<Item> GetUsersItems(int userId);
         Task BorrowItems(List<int> itemIdList, int userId);
         Task ReturnItem(int itemId);
+        Task ReturnAllItems(List<int> itemIdList);
         Task<Item> UpdateItem(Item updateItem);
         Task<User> UpdateUser(User updatedUser);
     }

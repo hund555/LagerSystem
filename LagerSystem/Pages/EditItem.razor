@@ -4,22 +4,27 @@
 
 @inject ServiceLayer.ILagerService _lagerService
 
-<h3>EditItem</h3>
+<h3>Redigér genstand</h3>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="@Item" OnValidSubmit="UpdateItem">
+            <DataAnnotationsValidator />
+            <input type="hidden" @bind="@Item.ItemId" />
+            <div class="form-group">
+                <label>Genstands navn</label>
+                <input class="form-control" @bind="@Item.ItemName" />
+                <ValidationMessage For="() => Item.ItemName" />
+            </div>
+            <div class="form-group">
+                <label>Beskrivelse</label>
+                <input class="form-control" @bind="@Item.Discription" />
+            </div>
+            <input class="btn btn-primary" type="submit" value="Gem" onclick="return confirm('Er du sikker på du vil gemme dine ændringer?')"/>
+        </EditForm>
+    </div>
+</div>
 
-<EditForm Model="@Item" OnValidSubmit="UpdateItem">
-    <DataAnnotationsValidator/>
-    <input type="hidden" @bind="@Item.ItemId" />
-    <div class="form-group">
-        <label >Genstands navn</label>
-        <input class="form-control" @bind="@Item.ItemName" />
-        <ValidationMessage For="() => Item.ItemName" />
-    </div>
-    <div class="form-group">
-        <label>Beskrivelse</label>
-        <input class="form-control" @bind="@Item.Discription" />
-    </div>
-    <input class="btn btn-primary" type="submit" value="Gem"/>
-</EditForm>
 
 @code {
     [Parameter]

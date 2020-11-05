@@ -60,6 +60,8 @@
     private async Task DeleteItem(int itemId)
     {
         await _lagerService.DeleteItem(itemId);
+
+        items.Remove(items.FirstOrDefault(i => i.ItemId == itemId));
     }
 
     private async Task BorrowItem(Item item)

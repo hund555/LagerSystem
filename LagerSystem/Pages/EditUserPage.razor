@@ -1,0 +1,38 @@
+﻿@page "/EditUser/{UserId:int}"
+
+@inject NavigationManager navigation
+@inject ServiceLayer.ILagerService _lagerService
+<h3>Rediér bruger</h3>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="@User" OnValidSubmit="UpdateUser">
+            <DataAnnotationsValidator/>
+            <input type="hidden" @bind="User.UserId"/>
+            <div class="form-group">
+                <label>Navn</label>
+                <input class="form-control" @bind="User.Name"/>
+                <ValidationMessage For="() => User.Name"/>
+            </div>
+            <input class="btn btn-primary" type="submit" value="Gem" onclick="return confirm('Er du sikker på du vil gemme dine ændringer?')" />
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public int UserId { get; set; }
+
+    public DataLayer.Entities.User User { get; set; }
+
+    protected override void OnInitialized()
+    {
+        User = _lagerService.GetUserById(UserId);
+    }
+
+    private async Task UpdateUser()
+    {
+        await _lagerService.UpdateUser(User);
+        navigation.NavigateTo("/useradministration");
+    }
+}

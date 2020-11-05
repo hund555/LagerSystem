@@ -7,7 +7,7 @@
 
 @using DataLayer.Entities
 <h3>BorrowItemsListPage</h3>
-
+<hr />
 @foreach (var item in Items)
 {
     <div class="row">
@@ -66,6 +66,7 @@
     private async Task ResetLocalStorage()
     {
         await ProtectedLocalStore.DeleteAsync("ItemList");
+        Items = new List<Item>();
         StateHasChanged();
     }
 

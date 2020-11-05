@@ -23,8 +23,18 @@
             </NavLink>
         </li>
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="fetchdata">
-                <span class="oi oi-list-rich" aria-hidden="true"></span> Fetch data
+            <NavLink class="nav-link" href="addnewuser">
+                <span class="oi oi-person" aria-hidden="true"></span> Tilføj bruger
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="useradministration">
+                <span class="oi oi-people" aria-hidden="true"></span> Brugere
+            </NavLink>
+        </li>
+        <li class="nav-item px-3">
+            <NavLink class="nav-link" href="createnewitem">
+                <span class="oi oi-plus" aria-hidden="true"></span> Tilføj genstand
             </NavLink>
         </li>
         <li class="nav-item px-3">
@@ -57,14 +67,16 @@
         collapseNavMenu = !collapseNavMenu;
     }
 
-    protected async Task OnAfterRenderAsync()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        BorrowItemsCount = 0;
         string localStorege = await ProtectedLocalStore.GetAsync<string>("ItemList");
         if (!string.IsNullOrEmpty(localStorege))
         {
             List<Item> itemList = new List<Item>();
             itemList = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Item>>(localStorege);
             BorrowItemsCount = itemList.Count();
+            StateHasChanged();
         }
     }
 

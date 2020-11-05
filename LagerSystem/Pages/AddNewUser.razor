@@ -1,0 +1,28 @@
+﻿@page "/addnewuser"
+
+@inject ServiceLayer.ILagerService _lagerService
+<h3>Tilføj ny bruger</h3>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="@CreateUser" OnValidSubmit="CreateNewUser">
+            <DataAnnotationsValidator/>
+            <div class="form-group">
+                <label>Navn</label>
+                <input class="form-control" @bind="CreateUser.Name"/>
+                <ValidationMessage For="() => CreateUser.Name"/>
+            </div>
+            <input class="btn btn-primary" type="submit" value="Tilføj bruger"/>
+        </EditForm>
+    </div>
+</div>
+
+@code {
+    public DataLayer.Entities.User CreateUser { get; set; } = new DataLayer.Entities.User();
+
+    private async Task CreateNewUser()
+    {
+        await _lagerService.CreateNewUser(CreateUser);
+        CreateUser = new DataLayer.Entities.User();
+    }
+}

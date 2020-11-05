@@ -8,10 +8,11 @@
 @inject ServiceLayer.ILagerService _lagerService
 
 <h3>BorrowedItems</h3>
+<hr />
 <div class="row">
     <div class="col-md-3">
-        <select class="form-control" @bind="@UserId">
-            <option value="null">Alle</option>
+        <select class="form-control" @bind="UserId">
+            <option value="0">Alle</option>
             @foreach (var user in Users)
             {
                 <option value="@user.UserId">@user.Name</option>
@@ -21,6 +22,12 @@
     <div class="col-md-2">
         <button class="btn btn-primary" @onclick="Find">Søg</button>
     </div>
+    @if (ShowReturnMultible == true)
+    {
+        <div class="col-md-2">
+            <button class="btn btn-warning" @onclick="ReturnAllItems">Aflever alt</button>
+        </div>
+    }
 </div>
 <hr />
 
@@ -51,17 +58,20 @@
     private IList<User> Users { get; set; }
 
     [Parameter]
-    public int? UserId { get; set; } = null;
+    public int UserId { get; set; }
+    public bool ShowReturnMultible { get; set; } = false;
 
     protected override void OnInitialized()
     {
-        if (UserId == null)
+        if (UserId == 0)
         {
             items = _lagerService.GetItemsNotInStorege().ToList();
+
         }
         else
         {
-            items = _lagerService.GetUsersItems((int)UserId).ToList();
+            items = _lagerService.GetUsersItems(UserId).ToList();
+            ShowReturnMultible = true;
         }
         Users = _lagerService.GetAllUsers().ToList();
     }
@@ -74,12 +84,28 @@
 
     private void Find()
     {
-        navigate.NavigateTo($"/BorrowedItems/{UserId}");
+        if (UserId > 0)
+        {
+            ShowReturnMultible = true;
+        }
+        navigate.NavigateTo($"/BorrowedItems/{UserId}", true);
     }
 
     private async Task ReturnItem(int itemId)
     {
         await _lagerService.ReturnItem(itemId);
         items.Remove(items.FirstOrDefault(i => i.ItemId == itemId));
+    }
+
+    private async Task ReturnAllItems()
+    {
+        List<int> itemIdList = new List<int>();
+        foreach (Item item in items)
+        {
+            itemIdList.Add(item.ItemId);
+        }
+
+        await _lagerService.ReturnAllItems(itemIdList);
+        navigate.NavigateTo($"/BorrowedItems", true);
     }
 }

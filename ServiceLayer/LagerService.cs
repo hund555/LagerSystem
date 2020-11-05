@@ -42,6 +42,7 @@ namespace ServiceLayer
         {
             return _context.Items
                 .Where(i => i.UserId == userId)
+                .Include(u => u.User)
                 .AsNoTracking();
         }
 
@@ -98,6 +99,25 @@ namespace ServiceLayer
             await _context.SaveChangesAsync();
         }
 
+        public async Task ReturnAllItems(List<int> itemIdList)
+        {
+            List<Item> items = new List<Item>();
+            foreach (int itemId in itemIdList)
+            {
+                Item item = await _context.Items
+                    .FindAsync(itemId);
+
+                if (item != null)
+                {
+                    item.UserId = null;
+                    items.Add(item);
+                }
+            }
+
+            _context.Items.UpdateRange(items);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task DeleteItem(int itemId)
         {
             Item deletedItem = _context.Items.Find(itemId);
@@ -140,10 +160,15 @@ namespace ServiceLayer
 
         public async Task DeleteUser(int userId)
         {
-            User user = _context.Users.Find(userId);
+            User user = await _context.Users
+                .Include(i => i.Items)
+                .FirstOrDefaultAsync(u => u.UserId == userId);
 
-            _context.Users.Remove(user);
-
+            if (user != null)
+            {
+                _context.Users.Remove(user);
+            }
+            
             await _context.SaveChangesAsync();
         }
     }
