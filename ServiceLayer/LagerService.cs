@@ -63,7 +63,7 @@ namespace ServiceLayer
 
             return updateItem;
         }
-
+        //låner en genstand
         public async Task BorrowItems(List<int> itemIdList, int userId)
         {
             List<Item> items = new List<Item>();
@@ -84,7 +84,7 @@ namespace ServiceLayer
             _context.Items.UpdateRange(items);
             await _context.SaveChangesAsync();
         }
-
+        //retunere en genstand
         public async Task ReturnItem(int itemId)
         {
             Item item = await _context.Items
@@ -98,7 +98,7 @@ namespace ServiceLayer
             _context.Items.Update(item);
             await _context.SaveChangesAsync();
         }
-
+        //Retunere alle genstande som har deres ID i listen
         public async Task ReturnAllItems(List<int> itemIdList)
         {
             List<Item> items = new List<Item>();
